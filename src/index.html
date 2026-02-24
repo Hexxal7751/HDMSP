@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-abyss accent-cyan fx-orbs fx-glow fx-glass fx-animations">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'none';" />
+  <title>HDMSP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── Particle canvas ──────────────────────────────────────────────────── -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- ── Ambient orbs ────────────────────────────────────────────────────── -->
+<div class="orb-field">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- ── Scanlines ───────────────────────────────────────────────────────── -->
+<div class="scanlines"></div>
+<div class="grain"></div>
+
+<!-- ── App shell ───────────────────────────────────────────────────────── -->
+<div class="app" id="app">
+
+  <!-- Chrome bar -->
+  <header class="chrome">
+    <div class="chrome-left">
+      <img class="chrome-logo" src="icon.png" alt="HDMSP" />
+      <span class="chrome-wordmark">HDMSP</span>
+    </div>
+
+    <div class="step-bar" id="stepBar">
+      <div class="step active" data-step="0">INPUT</div>
+      <div class="step-sep">──</div>
+      <div class="step" data-step="1">ANALYZING</div>
+      <div class="step-sep">──</div>
+      <div class="step" data-step="2">SELECT FORMAT</div>
+      <div class="step-sep">──</div>
+      <div class="step" data-step="3">DOWNLOADING</div>
+      <div class="step-sep">──</div>
+      <div class="step" data-step="4">COMPLETE</div>
+    </div>
+
+    <div class="chrome-right">
+      <button class="settings-btn" id="settingsBtn" title="Appearance Settings">
+        <span class="gear">⚙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- ── STEP 0: Input ──────────────────────────────────────────────── -->
+    <section class="screen active" id="screen-0">
+      <div class="input-hero">
+
+        <div class="logo-block">
+          <img class="logo-icon-hero" src="icon.png" alt="HDMSP" />
+          <span class="logo-text">HDMSP</span>
+          <span class="logo-sub">High Definition Media Stream Processor</span>
+        </div>
+
+        <div class="url-card" id="urlCard">
+          <input type="text" id="urlInput" class="url-input"
+            placeholder="Paste any stream URL here…"
+            autocomplete="off" spellcheck="false" />
+          <button class="analyze-btn" id="analyzeBtn">ANALYZE →</button>
+        </div>
+
+        <p class="input-error" id="inputError"></p>
+      </div>
+    </section>
+
+    <!-- ── STEP 1: Analyzing ──────────────────────────────────────────── -->
+    <section class="screen" id="screen-1">
+      <div class="loading-block">
+        <div class="loading-icon">◈</div>
+        <div class="loading-bar-wrap">
+          <div class="loading-bar" id="loadingBar"></div>
+        </div>
+        <p class="loading-label" id="loadingLabel">Fetching stream metadata…</p>
+      </div>
+    </section>
+
+    <!-- ── STEP 2: Select Format ──────────────────────────────────────── -->
+    <section class="screen" id="screen-2">
+      <div class="select-layout">
+
+        <!-- Thumb + meta -->
+        <div class="meta-card">
+          <div class="thumb-wrap">
+            <div class="thumb-placeholder" id="thumbPlaceholder">
+              <span class="thumb-icon">▶</span>
+            </div>
+            <img id="thumbImg" class="thumb-img" src="" alt="" style="display:none" />
+          </div>
+          <div class="meta-text">
+            <div class="meta-title" id="metaTitle">Loading…</div>
+            <div class="meta-row" id="metaRow"></div>
+          </div>
+        </div>
+
+        <!-- Output mode + quality -->
+        <div class="controls-row">
+          <div class="control-group">
+            <span class="control-label">OUTPUT</span>
+            <div class="toggle-group">
+              <button class="toggle-btn active" id="modeVideo">Video + Audio</button>
+              <button class="toggle-btn" id="modeAudio">Audio Only</button>
+            </div>
+          </div>
+          <div class="control-group flex-grow">
+            <span class="control-label">QUALITY</span>
+            <select class="quality-select" id="qualitySelect"></select>
+          </div>
+        </div>
+
+        <!-- Codec warning -->
+        <div class="codec-warn" id="codecWarn" style="display:none">
+          <span class="warn-icon">⚠</span>
+          <span id="codecWarnText">This codec (VP9 / AV1 at 4K+) may not play on all Android devices.</span>
+        </div>
+
+        <!-- Save path -->
+        <div class="controls-row save-row">
+          <div class="control-group flex-grow">
+            <span class="control-label">SAVE TO</span>
+            <div class="save-path-wrap">
+              <span class="save-path" id="savePath">—</span>
+              <button class="browse-btn" id="browseBtn">BROWSE</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Download -->
+        <div class="dl-btn-row">
+          <button class="dl-btn" id="dlBtn" disabled>DOWNLOAD  ↓</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── STEP 3: Downloading ────────────────────────────────────────── -->
+    <section class="screen" id="screen-3">
+      <div class="dl-block">
+        <div class="dl-phase" id="dlPhase">Preparing…</div>
+
+        <div class="dl-bar-wrap">
+          <div class="dl-bar-fill" id="dlBarFill" style="width:0%"></div>
+        </div>
+
+        <div class="dl-pct-row">
+          <span class="dl-pct" id="dlPct">0 %</span>
+          <span class="dl-speed" id="dlSpeed"></span>
+        </div>
+
+        <div class="dl-eta" id="dlEta"></div>
+
+        <div class="phase-dots">
+          <div class="phase-dot-wrap">
+            <div class="phase-dot" id="dot-0" data-active="true"></div>
+            <span class="phase-dot-label">Video</span>
+          </div>
+          <div class="phase-dot-line"></div>
+          <div class="phase-dot-wrap">
+            <div class="phase-dot" id="dot-1"></div>
+            <span class="phase-dot-label">Audio</span>
+          </div>
+          <div class="phase-dot-line"></div>
+          <div class="phase-dot-wrap">
+            <div class="phase-dot" id="dot-2"></div>
+            <span class="phase-dot-label">Merge</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STEP 4: Complete ───────────────────────────────────────────── -->
+    <section class="screen" id="screen-4">
+      <div class="done-block">
+        <div class="done-check" id="doneCheck">✓</div>
+        <div class="done-title">DOWNLOAD COMPLETE</div>
+        <div class="done-path" id="donePath"></div>
+        <div class="done-btns">
+          <button class="done-btn accent" id="revealBtn">SHOW IN FOLDER</button>
+          <button class="done-btn ghost"  id="againBtn">DOWNLOAD ANOTHER</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Settings panel ──────────────────────────────────────────────────── -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-overlay" id="settingsOverlay"></div>
+  <div class="settings-drawer">
+
+    <div class="settings-header">
+      <span class="settings-title">APPEARANCE</span>
+      <button class="settings-close" id="settingsClose">✕</button>
+    </div>
+
+    <div class="settings-body">
+
+      <!-- Effects section -->
+      <div>
+        <div class="settings-section-title">Visual Effects</div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Ambient Orbs</div>
+            <div class="settings-row-desc">Floating glow blobs in background</div>
+          </div>
+          <button class="pill-toggle on" id="tog-orbs" data-fx="fx-orbs"></button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Particle Field</div>
+            <div class="settings-row-desc">Animated dot network canvas</div>
+          </div>
+          <button class="pill-toggle" id="tog-particles" data-fx="fx-particles"></button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Glow &amp; Bloom</div>
+            <div class="settings-row-desc">Neon shadows on accents</div>
+          </div>
+          <button class="pill-toggle on" id="tog-glow" data-fx="fx-glow"></button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Glass Panels</div>
+            <div class="settings-row-desc">Frosted glass on cards &amp; bars</div>
+          </div>
+          <button class="pill-toggle on" id="tog-glass" data-fx="fx-glass"></button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Scanlines</div>
+            <div class="settings-row-desc">Subtle CRT-style line overlay</div>
+          </div>
+          <button class="pill-toggle" id="tog-scanlines" data-fx="fx-scanlines"></button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Film Grain</div>
+            <div class="settings-row-desc">Texture noise overlay</div>
+          </div>
+          <button class="pill-toggle" id="tog-grain" data-fx="fx-grain"></button>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Animations</div>
+            <div class="settings-row-desc">Transitions &amp; motion effects</div>
+          </div>
+          <button class="pill-toggle on" id="tog-animations" data-fx="fx-animations"></button>
+        </div>
+
+      </div>
+
+      <!-- Accent colour -->
+      <div>
+        <div class="settings-section-title">Accent Colour</div>
+        <div class="accent-swatches">
+          <button class="accent-swatch active" data-accent="cyan"
+            style="background:#00d4ff" title="Cyan"></button>
+          <button class="accent-swatch" data-accent="violet"
+            style="background:#a78bfa" title="Violet"></button>
+          <button class="accent-swatch" data-accent="amber"
+            style="background:#fbbf24" title="Amber"></button>
+          <button class="accent-swatch" data-accent="rose"
+            style="background:#fb7185" title="Rose"></button>
+          <button class="accent-swatch" data-accent="green"
+            style="background:#34d399" title="Emerald"></button>
+        </div>
+      </div>
+
+      <!-- Theme -->
+      <div>
+        <div class="settings-section-title">Theme</div>
+        <div class="theme-btns">
+          <button class="theme-btn active" data-theme="abyss">ABYSS</button>
+          <button class="theme-btn" data-theme="midnight">MIDNIGHT</button>
+          <button class="theme-btn" data-theme="obsidian">OBSIDIAN</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

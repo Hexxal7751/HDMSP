@@ -1,0 +1,11 @@
+{
+  "name": "hdmsp-toolkit",
+  "productName": "HDMSP Toolkit",
+  "version": "1.0.0",
+  "description": "HDMSP Installer, Repair & Uninstaller — PowerShell edition",
+  "author": "Hexxal7751",
+  "scripts": {
+    "build": "powershell -ExecutionPolicy Bypass -Command \"if (!(Get-Module -ListAvailable ps2exe)) { Install-Module ps2exe -Scope CurrentUser -Force }; Import-Module ps2exe; Invoke-ps2exe -InputFile toolkit.ps1 -OutputFile dist/HDMSP-Toolkit.exe -iconFile icon.ico -Title 'HDMSP Toolkit' -Description 'HDMSP Install, Repair & Uninstall' -Company 'Hexxal7751' -Version '1.0.0.0'\"",
+    "build:toolkit": "npm run build"
+  }
+}

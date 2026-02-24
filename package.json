@@ -1,0 +1,35 @@
+{
+  "name": "hdmsp",
+  "productName": "High Definition Media Stream Processor",
+  "version": "1.0.0",
+  "description": "High Definition Media Stream Processor",
+  "author": "Hexxal7751",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev":   "electron . --dev",
+    "build": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron":         "^28.2.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId":       "com.hdmsp.app",
+    "productName": "HDMSP",
+    "win": {
+      "target": "portable",
+      "icon":   "src/icon.ico"
+    },
+    "portable": {
+      "artifactName": "HDMSP.exe"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": []
+  }
+}

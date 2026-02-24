@@ -1,0 +1,17 @@
+# Binaries — downloaded at runtime, not committed
+ffmpeg.exe
+yt-dlp.exe
+
+# Build output
+dist/
+HDMSP-Setup/dist/
+
+# Dependencies
+node_modules/
+HDMSP-Setup/node_modules/
+
+# Editor
+.vscode/
+
+# Misc
+*.tmp
